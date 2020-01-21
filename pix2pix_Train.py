@@ -33,8 +33,8 @@ parser.add_argument('--beta2', type=float, default=0.999)  # верхнее зн
 parser.add_argument('--lambda_A', type=float, default=100.0)
 
 # Разное
-parser.add_argument('--model_path', type=str, default='./models')  # путь временного сохранения весов модели
-parser.add_argument('--sample_path', type=str, default='./results')  # Путь сохранения образцов изображений 
+parser.add_argument('--model_path', type=str, default='./MFTI_Proj/models')  # путь временного сохранения весов модели
+parser.add_argument('--sample_path', type=str, default='./MFTI_Proj/results')  # Путь сохранения образцов изображений 
 parser.add_argument('--log_step', type=int, default=10)
 parser.add_argument('--sample_step', type=int, default=100)
 parser.add_argument('--num_workers', type=int, default=2)
@@ -122,7 +122,8 @@ def main():
     data_loader = data.DataLoader(dataset=dataset,
                                   batch_size=args.batchSize,
                                   shuffle=True,
-                                  num_workers=args.num_workers)
+                                  num_workers=args.num_workers,
+                                  drop_last=True)
 
     if not os.path.exists(args.model_path):
         os.makedirs(args.model_path)
@@ -189,7 +190,7 @@ def main():
             # принт лога обучения
             if (i + 1) % args.log_step == 0:
                 print('Epoch [%d/%d], BatchStep[%d/%d], D_Real_loss: %.4f, D_Fake_loss: %.4f, G_loss: %.4f, G_L1_loss: %.4f'
-                      % (epoch + 1, args.num_epochs, i + 1, total_step, loss_D_real.data[0], loss_D_fake.data[0], loss_G_GAN.data[0], loss_G_L1.data[0]))
+                      % (epoch + 1, args.num_epochs, i + 1, total_step, loss_D_real.data, loss_D_fake.data, loss_G_GAN.data, loss_G_L1.data))
 
             # Сохранение изображений
             if (i + 1) % args.sample_step == 0:
