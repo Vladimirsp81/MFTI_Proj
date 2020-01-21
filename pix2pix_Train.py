@@ -24,7 +24,7 @@ parser.add_argument('--which_direction', type=str, default='AtoB', help='AtoB or
 parser.add_argument('--no_resize_or_crop', action='store_true', help='scaling and cropping of images at load time [resize_and_crop|crop|scale_width|scale_width_and_crop]')
 parser.add_argument('--no_flip', action='store_true', help='if specified, do not flip the images for data augmentation')
 
-# Гипер параметры тренировки и оптимизатора
+# Гипер параметры обучения и оптимизатора
 parser.add_argument('--num_epochs', type=int, default=100)
 parser.add_argument('--batchSize', type=int, default=1, help='input batch size')
 parser.add_argument('--lr', type=float, default=0.0002)
@@ -85,7 +85,7 @@ class ImageFolder(data.Dataset):
     def __len__(self):
         return len(self.image_paths)
 
-##### Вспомогательная функция для тренировки на GPU
+##### Вспомогательная функция для обучения на GPU
 def to_variable(x):
     if torch.cuda.is_available():
         x = x.cuda()
@@ -110,7 +110,7 @@ def GAN_Loss(input, target, criterion):
 
     return criterion(input, labels)
 
-######################### Функция для тренировки
+######################### Функция для обучения
 def main():
     # Объявление загрузчика
     cudnn.benchmark = True
@@ -154,7 +154,7 @@ def main():
             input_A = sample['A']
             input_B = sample['B']
 
-            # ===================== Тренировка Дескриминатора =====================#
+            # ===================== Обучение Дескриминатора =====================#
             discriminator.zero_grad()
 
             real_A = to_variable(input_A)
@@ -174,7 +174,7 @@ def main():
             loss_D.backward(retain_graph=True)
             d_optimizer.step()
 
-            # ===================== Тренировка Генератора =====================#
+            # ===================== Обучение Генератора =====================#
             generator.zero_grad()
 
             pred_fake = discriminator(real_A, fake_B)
@@ -186,7 +186,7 @@ def main():
             loss_G.backward()
             g_optimizer.step()
 
-            # принт лога тренировки
+            # принт лога обучения
             if (i + 1) % args.log_step == 0:
                 print('Epoch [%d/%d], BatchStep[%d/%d], D_Real_loss: %.4f, D_Fake_loss: %.4f, G_loss: %.4f, G_L1_loss: %.4f'
                       % (epoch + 1, args.num_epochs, i + 1, total_step, loss_D_real.data[0], loss_D_fake.data[0], loss_G_GAN.data[0], loss_G_L1.data[0]))
