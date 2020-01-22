@@ -25,8 +25,8 @@ parser.add_argument('--num_epochs', type=int, default=100)
 parser.add_argument('--batchSize', type=int, default=1, help='test Batch size')
 
 # Разное
-parser.add_argument('--model_path', type=str, default='./models')
-parser.add_argument('--sample_path', type=str, default='./test_results')
+parser.add_argument('--model_path', type=str, default='./MFTI_Proj/models')
+parser.add_argument('--sample_path', type=str, default='./MFTI_Proj/test_results')
 
 ##### Вспомогательная функция для загрузки данных и их предобработки
 IMG_EXTENSIONS = [
@@ -50,30 +50,12 @@ class ImageFolder(data.Dataset):
         AB_path = self.image_paths[index]
         AB = Image.open(AB_path).convert('RGB')
 
-        #if(not self.no_resize_or_crop):
-        #    AB = AB.resize((286 * 2, 286), Image.BICUBIC)
-        #    AB = self.transform(AB)
-#
-        #    w = int(AB.size(2) / 2)
-        #    h = AB.size(1)
-        #    w_offset = random.randint(0, max(0, w - 256 - 1))
-        #    h_offset = random.randint(0, max(0, h - 256 - 1))
-#
-        #    A = AB[:, h_offset:h_offset + 256, w_offset:w_offset + 256]
-        #    B = AB[:, h_offset:h_offset + 256, w + w_offset:w + w_offset + 256]
-        #else:
         AB = self.transform(AB)
         w_total = AB.size(2)
         w = int(w_total / 2)
 
         A = AB[:, :256, :256]
         B = AB[:, :256, w:w + 256]
-
-        #if (not self.no_flip) and random.random() < 0.5:
-        #    idx = [i for i in range(A.size(2) - 1, -1, -1)]
-        #    idx = torch.LongTensor(idx)
-        #    A = A.index_select(2, idx)
-        #    B = B.index_select(2, idx)
 
         return {'A': A, 'B': B}
 
@@ -103,7 +85,8 @@ def main():
     data_loader = data.DataLoader(dataset=dataset,
                                   batch_size=args.batchSize,
                                   shuffle=True,
-                                  num_workers=2)
+                                  num_workers=2,
+                                  drop_last=True)
 
     if not os.path.exists(args.model_path):
         os.makedirs(args.model_path)
