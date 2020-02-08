@@ -39,7 +39,7 @@ parser.add_argument('--log_step', type=int, default=10)
 parser.add_argument('--sample_step', type=int, default=100)
 parser.add_argument('--num_workers', type=int, default=2)
 
-##### Вспомогательная функция для загрузки данных и их предобработки
+# Функция для загрузки данных и их предобработки
 class ImageFolder(data.Dataset):
     def __init__(self, opt):
         # os.listdir функция, возвращающая перечень папок
@@ -67,18 +67,18 @@ class ImageFolder(data.Dataset):
     def __len__(self):
         return len(self.image_paths)
 
-##### Вспомогательная функция для обучения на GPU
+##### Функция для обучения на GPU
 def to_variable(x):
     if torch.cuda.is_available():
         x = x.cuda()
     return Variable(x)
 
-##### Вспомогательная функция для Math
+
 def denorm(x):
     out = (x + 1) / 2
     return out.clamp(0, 1)
 
-##### Вспомогательная функция для определения GAN Loss
+##### Функция для определения GAN Loss
 def GAN_Loss(input, target, criterion):
     if target == True:
         tmp_tensor = torch.FloatTensor(input.size()).fill_(1.0)
@@ -114,6 +114,7 @@ def main():
 
     # Объявление сетей
     generator = Generator(args.batchSize)
+
     discriminator = Discriminator(args.batchSize)
 
     # Выбор метрик
@@ -144,7 +145,6 @@ def main():
             fake_B = generator(real_A)
             real_B = to_variable(input_B)
 
-            # d_optimizer.zero_grad()
 
             pred_fake = discriminator(real_A, fake_B)
             loss_D_fake = GAN_Loss(pred_fake, False, criterionGAN)
@@ -179,9 +179,25 @@ def main():
                 res = torch.cat((torch.cat((real_A, fake_B), dim=3), real_B), dim=3)
                 torchvision.utils.save_image(denorm(res.data), os.path.join(args.sample_path, 'Generated-%d-%d.png' % (epoch + 1, i + 1)))
 
-        # Сохранение весов моделей на каждой эпохе
+        # Сохранение состояния моделей на каждой эпохе
         g_path = os.path.join(args.model_path, 'generator-%d.pkl' % (epoch + 1))
-        torch.save(generator.state_dict(), g_path)
+        #torch.save(generator.state_dict(), g_path) только веса
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': generator.state_dict(),
+            'optimizer_state_dict': g_optimizer.state_dict(),
+            'loss_G': loss_G
+            }, g_path)
+        
+        
+        g_path_D = os.path.join(args.model_path, 'discriminator-%d.pkl' % (epoch + 1))
+        #torch.save(discriminator.state_dict(), g_path_D) только веса
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': discriminator.state_dict(),
+            'optimizer_state_dict': d_optimizer.state_dict(),
+            'loss_D': loss_D
+            }, g_path_D)
 
 if __name__ == "__main__":
     main()

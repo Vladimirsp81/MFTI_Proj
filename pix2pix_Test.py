@@ -28,7 +28,7 @@ parser.add_argument('--batchSize', type=int, default=1, help='test Batch size')
 parser.add_argument('--model_path', type=str, default='./MFTI_Proj/models')
 parser.add_argument('--sample_path', type=str, default='./MFTI_Proj/test_results')
 
-##### Вспомогательная функция для загрузки данных и их предобработки
+# Функция для загрузки данных и их предобработки
 IMG_EXTENSIONS = [
     '.jpg', '.JPG', '.jpeg', '.JPEG',
     '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP',
@@ -43,7 +43,7 @@ class ImageFolder(data.Dataset):
         self.transform = transforms.Compose([transforms.ToTensor(),
                                              transforms.Normalize((0.5, 0.5, 0.5),
                                                                   (0.5, 0.5, 0.5))])
-        self.dir_AB = os.path.join(opt.dataroot, 'train')  # ./edges2shoes/train
+        self.dir_AB = os.path.join(opt.dataroot, 'val')  # ./edges2shoes/val
         self.image_paths = list(map(lambda x: os.path.join(self.dir_AB, x), os.listdir(self.dir_AB)))
 
     def __getitem__(self, index):
@@ -62,13 +62,12 @@ class ImageFolder(data.Dataset):
     def __len__(self):
         return len(self.image_paths)
 
-##### Вспомогательная функция для тренировки на GPU
+# Функция для тренировки на GPU
 def to_variable(x):
     if torch.cuda.is_available():
         x = x.cuda()
     return Variable(x)
 
-##### Вспомогательная функция для Math
 def denorm(x):
     out = (x + 1) / 2
     return out.clamp(0, 1)
